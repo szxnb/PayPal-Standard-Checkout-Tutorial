@@ -45,7 +45,7 @@ url_to_head(paypal_sdk_url + "?client-id=" + client_id + "&enable-funding=venmo&
             layout: 'vertical',
             label: 'paypal'
         },
-
+        
         createOrder: function(data, actions) { //https://developer.paypal.com/docs/api/orders/v2/#orders_create
             return fetch("http://localhost:3000/create_order", {
                 method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -88,8 +88,53 @@ url_to_head(paypal_sdk_url + "?client-id=" + client_id + "&enable-funding=venmo&
             console.log(err);
         }
     });
+    
     paypal_buttons.render('#payment_options');
 })
 .catch((error) => {
     console.error(error);
 });
+
+// 跨页面传参
+document.addEventListener("DOMContentLoaded", function() {
+    // 打印 URL 中的查询参数
+    console.log(111);
+    console.log(window.location.search);
+    // 获取从streamlit过来的参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const question = urlParams.get('question');
+    var parametersElement = document.getElementById("question");
+    parametersElement.placeholder = question;
+
+    const card1 = urlParams.get('card1');
+    var parametersElement = document.getElementById("card1");
+    parametersElement.placeholder = "Card1: " + card1;
+
+    const card2 = urlParams.get('card2');
+    var parametersElement = document.getElementById("card2");
+    parametersElement.placeholder ="Card2: " + card2;
+
+    const card3 = urlParams.get('card3');
+    var parametersElement = document.getElementById("card3");
+    parametersElement.placeholder = "Card3: " + card3;
+});
+
+// 邮箱格式检查
+function validateEmail(){
+    // 获取输入的电子邮件地址
+    var email = document.getElementById("email").value;
+
+    // 正则表达式用于验证电子邮件地址的格式
+    var emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+    // 检查电子邮件地址是否匹配正则表达式
+    if (emailRegex.test(email)) {
+        // 如果格式有效，显示成功消息
+        document.getElementById("result").textContent = "Valid email address";
+        return true;
+    } else {
+        // 如果格式无效，显示错误消息
+        document.getElementById("result").textContent = "Invalid email address";
+        return false;
+    }
+}
