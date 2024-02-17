@@ -37,13 +37,13 @@ url_to_head(paypal_sdk_url + "?client-id=" + client_id + "&enable-funding=venmo&
     let alerts = document.getElementById("alerts");
     let paypal_buttons = paypal.Buttons({ // https://developer.paypal.com/sdk/js/reference
         onClick: (data) => { // https://developer.paypal.com/sdk/js/reference/#link-oninitonclick
-            //Custom JS here
-        },
-        style: { //https://developer.paypal.com/sdk/js/reference/#link-style
-            shape: 'rect',
-            color: 'gold',
-            layout: 'vertical',
-            label: 'paypal'
+            
+            },
+            style: { //https://developer.paypal.com/sdk/js/reference/#link-style
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'paypal'
         },
         
         createOrder: function(data, actions) { //https://developer.paypal.com/docs/api/orders/v2/#orders_create
@@ -71,6 +71,9 @@ url_to_head(paypal_sdk_url + "?client-id=" + client_id + "&enable-funding=venmo&
                 //Custom Successful Message
                 alerts.innerHTML = `<div class=\'ms-alert ms-action\'>Thank you ` + order_details.payer.name.given_name + ` ` + order_details.payer.name.surname + ` for your payment of ` + order_details.purchase_units[0].payments[intent_object][0].amount.value + ` ` + order_details.purchase_units[0].payments[intent_object][0].amount.currency_code + `!</div>`;
 
+                // 支付成功后发送生成报告请求
+                sendGetRequest(question, card1, card2, card3, email)
+
                 //Close out the PayPal buttons that were rendered
                 paypal_buttons.close();
              })
@@ -95,28 +98,57 @@ url_to_head(paypal_sdk_url + "?client-id=" + client_id + "&enable-funding=venmo&
     console.error(error);
 });
 
+function sendGetRequest(question, card1, card2, card3, email) {
+    // 构建GET请求URL
+    const url = `http://localhost:5000/make_report/${question}/${card1}/${card2}/${card3}/${email}`;
+
+    // 使用fetch发送GET请求
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 处理响应数据
+            console.log(data);
+        })
+        .catch(error => {
+            // 处理错误
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+
+var question = ''
+var card1 = ''
+var card2 = ''
+var card3 = ''
+var email = ''
+
 // 跨页面传参
 document.addEventListener("DOMContentLoaded", function() {
     // 打印 URL 中的查询参数
-    console.log(111);
     console.log(window.location.search);
     // 获取从streamlit过来的参数
     const urlParams = new URLSearchParams(window.location.search);
-    const question = urlParams.get('question');
+    question = urlParams.get('question');
     var parametersElement = document.getElementById("question");
     parametersElement.placeholder = question;
 
-    const card1 = urlParams.get('card1');
+    card1 = urlParams.get('card1');
     var parametersElement = document.getElementById("card1");
     parametersElement.placeholder = "Card1: " + card1;
 
-    const card2 = urlParams.get('card2');
+    card2 = urlParams.get('card2');
     var parametersElement = document.getElementById("card2");
     parametersElement.placeholder ="Card2: " + card2;
 
-    const card3 = urlParams.get('card3');
+    card3 = urlParams.get('card3');
     var parametersElement = document.getElementById("card3");
     parametersElement.placeholder = "Card3: " + card3;
+
+    email = urlParams.get('email');
 });
 
 // 邮箱格式检查
